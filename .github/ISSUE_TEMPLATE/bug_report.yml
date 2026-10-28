@@ -1,0 +1,121 @@
+name: Bug report
+description: Something is not working as expected.
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the report. Please read `docs/FAQ.md` first, and **remove
+        song names, show names, usernames, and other personal information** from
+        any log you paste.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: A clear description of the problem.
+      placeholder: Spotify played an ad but the volume stayed at 100%.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+      placeholder: The ad should have been muted and the volume restored afterwards.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Include what was playing, whether Spotify was paused, and whether you were dictating.
+      placeholder: |
+        1. Start Controlify with run.bat
+        2. Play a free Spotify playlist
+        3. Wait for an ad
+        4. ...
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Ad muting
+        - Dictation pause
+        - Tray icon / settings window
+        - Autostart / keeper / watcher
+        - Setup / installation
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: input
+    id: windows
+    attributes:
+      label: Windows version
+      placeholder: Windows 11 23H2 (build 22631)
+    validations:
+      required: true
+
+  - type: input
+    id: python
+    attributes:
+      label: Python version
+      description: Output of `.venv\Scripts\python.exe --version`.
+      placeholder: Python 3.14.6
+    validations:
+      required: true
+
+  - type: input
+    id: spotify
+    attributes:
+      label: Spotify version
+      description: Spotify desktop → Settings → About, or the Microsoft Store version.
+      placeholder: 1.2.xx.x
+    validations:
+      required: false
+
+  - type: dropdown
+    id: launch
+    attributes:
+      label: How did you start Controlify?
+      options:
+        - run.bat
+        - run-hidden.vbs
+        - Autostart (install-autostart.ps1)
+        - controlify.py directly
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: log
+    attributes:
+      label: Relevant log lines
+      description: |
+        A few lines around the problem from `controlify.log`. For detection
+        problems, a short `probe\probe.py` capture is even better. Redact song
+        and show names.
+      render: text
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I searched existing issues and the FAQ.
+          required: true
+        - label: I removed personal information (song/show names, usernames) from logs.
+          required: true
+        - label: I am running Windows 10 or 11.
+          required: true
+        - label: I am using the latest version from the default branch.
+          required: true

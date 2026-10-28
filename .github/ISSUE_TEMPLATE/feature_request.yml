@@ -1,0 +1,64 @@
+name: Feature request
+description: Suggest an improvement or a new behaviour.
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the suggestion. Controlify is intentionally small, so please
+        describe the problem before the solution. Check `docs/FAQ.md` and the
+        limitations in the README first.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: Describe the situation where Controlify gets in the way or falls short.
+      placeholder: When I switch output devices, the cue volume is too loud for the first ad.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed solution
+      description: What should Controlify do instead? Keep it as concrete as you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you considered
+      description: Workarounds, other tools, or a smaller change that would be enough.
+    validations:
+      required: false
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Ad detection / muting
+        - Dictation pause
+        - Tray icon / settings window
+        - Notifications / spoken cue
+        - Autostart / keeper / watcher
+        - Setup / installation
+        - Documentation
+        - Other
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This is not a request to remove, skip, or unlock Spotify ads.
+          required: true
+        - label: This does not require a Spotify or Wispr Flow account, API key, or network service.
+          required: true
+        - label: I searched existing issues and the FAQ.
+          required: true

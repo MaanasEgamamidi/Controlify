@@ -1,0 +1,32 @@
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Python caches / build output
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+
+# Runtime data: machine-specific, and the log can contain listening history
+*.log
+state.json
+settings.json
+settings.json.tmp
+
+# Downloaded Piper voice models are large and licensed separately
+voices/
+*.onnx
+*.onnx.json
+
+# Volume-scaled cue clips are generated at runtime
+clips/.v*.wav
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

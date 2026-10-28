@@ -1,0 +1,22 @@
+* text=auto
+
+# Keep Windows scripts CRLF so they run correctly from a fresh clone.
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+*.vbs text eol=crlf
+
+# Keep Python and docs LF for consistent diffs.
+*.py text eol=lf
+*.md text eol=lf
+*.txt text eol=lf
+*.json text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+
+# Binary assets
+*.wav binary
+*.onnx binary
+*.png binary
+*.ico binary
+*.gif binary
