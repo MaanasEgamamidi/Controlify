@@ -179,8 +179,12 @@ Three processes, each supervising the one below it:
   never written). Only consulted with `--pause-needs-wispr-setting`; by
   default any dictation pauses Spotify.
 * Ads: Spotify's media session reports "Advertisement" / artist "Spotify" (no
-  album), or the metadata has the shape of an ad: **no album at all** and a
-  window title that is just the ad's own text instead of a track title.
+  album), or the metadata has the shape of an ad: **no album at all** with no
+  window naming it, or a window title that is just the ad's own text instead
+  of a track title.
+  All of Spotify's windows are read and the one naming the current playback
+  wins: the miniplayer's title stays on the track it was opened with, while
+  the main window keeps following playback and shows the ad text.
   A window that names the current track in either order ("Artist - Track"
   normally, "Track • Artist" in the miniplayer) is never an ad tell, so
   opening the miniplayer doesn't mute the song.

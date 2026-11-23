@@ -67,7 +67,9 @@ rule:
 4. Keep podcast episodes exempt from the weak window-title rule; a real ad
    inside a podcast still announces itself as "Advertisement".
 5. Keep track-shaped window titles exempt too, in either order: the miniplayer
-   shows "Track • Artist" instead of "Artist - Track".
+   shows "Track • Artist" instead of "Artist - Track". Pick the Spotify window
+   that names the current playback, not the first one, because the miniplayer's
+   title can stay on the track it was opened with.
 
 ## Code style
 

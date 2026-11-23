@@ -44,11 +44,26 @@ def test_window_with_a_dash_between_title_and_artist_is_not_ad():
     assert not is_ad(m(SONG.title, SONG.artist, SONG.album, PLAYING, win))
 
 
-def test_miniplayer_window_does_not_hide_an_albumless_ad():
-    # Ads never have an album, so the track-shaped window must not exempt one.
-    ad = m("See it now", "The Real Cost", "", PLAYING,
-           "See it now \u2022 The Real Cost")
+def test_albumless_ad_is_detected_behind_a_stale_miniplayer_window():
+    # The miniplayer window keeps the track it was opened with all through
+    # the ad break. No album is the only signal left.
+    ad = m("Enjoy Coca-Cola", "Coca-Cola", "", PLAYING,
+           "This fffire - New Version \u2022 Franz Ferdinand")
     assert is_ad(ad)
+
+
+def test_stale_miniplayer_window_is_not_chosen_for_the_current_track():
+    mini = "This fffire - New Version \u2022 Franz Ferdinand"
+    main = "Sample Artist - Current Song"
+    assert c.pick_window_title([mini, main], "Current Song",
+                               "Sample Artist") == main
+
+
+def test_ad_window_is_chosen_over_the_stale_miniplayer():
+    mini = "This fffire - New Version \u2022 Franz Ferdinand"
+    main = "Shop Black Friday deals."
+    assert c.pick_window_title([mini, main], "Shop Black Friday deals.",
+                               "Amazon") == main
 
 # The exact metadata a podcast episode publishes: no artist, the show as the
 # album, and a window title that is just the episode name.
@@ -169,6 +184,14 @@ def test_miniplayer_never_mutes_the_playing_song(app):
              f"{SONG.title} \u2022 {SONG.artist}")
     run(app, [mini] * 10)
     assert app.vol.v == 1.0 and not app.ad_active
+
+
+def test_albumless_ad_mutes_behind_a_stale_miniplayer_window(app):
+    # The miniplayer window still shows the last track while the ad plays.
+    stale = f"{SONG.artist} - {SONG.title} \u2022 Other Artist"
+    ad = m("Shop Black Friday deals.", "Amazon", "", PLAYING, stale)
+    run(app, [ad] * 3)
+    assert app.vol.v == 0.0
 
 def test_podcast_play_pause_cycle_never_mutes(app):
     # the real report: an episode played, got paused by hand, and was still

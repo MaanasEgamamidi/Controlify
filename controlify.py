@@ -96,6 +96,19 @@ def is_episode(m: Media) -> bool:
 WINDOW_SEPARATORS = r"\s*[\u2022\u00b7|]\s*|\s+[-\u2013\u2014]\s+"
 
 
+def _window_parts(win: str) -> list[str]:
+    return [p.strip() for p in re.split(WINDOW_SEPARATORS, win.strip().lower())]
+
+
+def window_names(win: str, title: str, artist: str) -> bool:
+    """True when a window title holds this title and artist, in either order."""
+    title, artist = title.strip().lower(), artist.strip().lower()
+    if not (win.strip() and title and artist):
+        return False
+    parts = _window_parts(win)
+    return title in parts and artist in parts
+
+
 def window_names_track(m: Media) -> bool:
     """True when the window title holds this track's own title and artist.
 
@@ -103,15 +116,32 @@ def window_names_track(m: Media) -> bool:
     "Track • Artist". Both name the same track, so neither is an ad tell.
     Only a window that cannot be split into title + artist falls through to
     the weak rule.
-
-    Ads never have an album, so requiring one here can't hide a real ad.
     """
-    title, artist = m.title.strip().lower(), m.artist.strip().lower()
-    win = m.window_title.strip().lower()
-    if not (m.album.strip() and title and artist and win):
-        return False
-    parts = [p.strip() for p in re.split(WINDOW_SEPARATORS, win)]
-    return title in parts and artist in parts
+    return window_names(m.window_title, m.title, m.artist)
+
+
+def pick_window_title(titles, title: str, artist: str) -> str:
+    """The window that names the current media, else the first one.
+
+    With the miniplayer open Spotify has two windows: the miniplayer's title
+    stays on the track it was opened with, while the (often hidden) main
+    window keeps following playback - and shows the ad's own text during a
+    break. Taking the first window used to return the stale miniplayer one,
+    which hid every ad behind a track title from before the break.
+    """
+    if not titles:
+        return ""
+    wanted = [s.strip().lower() for s in (title, artist) if s.strip()]
+    for win in titles:
+        if wanted and all(w in win.lower() for w in wanted):
+            return win
+    # An ad window is just the ad's own text, without the artist.
+    title = title.strip().lower()
+    if title:
+        for win in titles:
+            if title in win.lower():
+                return win
+    return titles[0]
 
 
 def ad_signal(m: Media) -> int:
@@ -126,9 +156,12 @@ def ad_signal(m: Media) -> int:
 
     So an ad is one of two things: the window title is exactly the ad's text,
     or the window has dropped the track form (e.g. "Advertisement",
-    "Spotify Free", "LISTEN NOW", a bare dash). Podcast episodes look like the
-    second case, so is_episode() vetoes them - but only when they have an
-    album, which ads never do.
+    "Spotify Free", "LISTEN NOW", a bare dash). Anything with no album whose
+    window does not name it is an ad too: the miniplayer's own window keeps
+    the track it was opened with, so the ad text can be missing from every
+    window for the whole break. Podcast episodes look like the window case,
+    so is_episode() vetoes them - but only when they have an album, which ads
+    never do.
 
     The window rules only apply while PLAYING: a paused Spotify also shows
     "Spotify Free".
@@ -140,11 +173,16 @@ def ad_signal(m: Media) -> int:
         return 0
     if is_episode(m):
         return 0
-    if window_names_track(m):
-        return 0
     win = m.window_title.strip()
     if not win:
         return 0
+    if window_names_track(m):
+        return 0
+    if not m.album.strip():
+        # No album is how Spotify publishes an ad. A real track that merely
+        # lost its album still names itself in the window, so this cannot mute
+        # one - but the miniplayer's stale window leaves no other signal.
+        return WEAK
     if win.lower() == title:
         # The window shows the ad's own text, not "Artist - Track".
         return WEAK
@@ -534,7 +572,7 @@ class SpotifyProbe:
             }
         return self._pids
 
-    def window_title(self, now: float) -> str:
+    def window_titles(self, now: float) -> list[str]:
         pids, found = self._spotify_pids(now), []
 
         @ctypes.WINFUNCTYPE(wt.BOOL, wt.HWND, wt.LPARAM)
@@ -552,7 +590,10 @@ class SpotifyProbe:
             return True
 
         user32.EnumWindows(cb, 0)
-        return found[0] if found else ""
+        return found
+
+    def window_title(self, now: float, title: str = "", artist: str = "") -> str:
+        return pick_window_title(self.window_titles(now), title, artist)
 
     def session(self):
         for s in self.manager.get_sessions():
@@ -569,8 +610,9 @@ class SpotifyProbe:
             status = int(s.get_playback_info().playback_status)
         except OSError:
             return None, None
-        media = Media(props.title or "", props.artist or "", props.album_title or "",
-                      status, self.window_title(now))
+        title, artist = props.title or "", props.artist or ""
+        media = Media(title, artist, props.album_title or "", status,
+                      self.window_title(now, title, artist))
         return s, media
 
 

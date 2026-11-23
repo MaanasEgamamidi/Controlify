@@ -131,6 +131,11 @@ It should not. The miniplayer changes Spotify's window title from
 neither counts as an ad. If a miniplayer still mutes the music, open an issue
 with those log lines.
 
+Ads still mute with the miniplayer open. Its window keeps the track it was
+opened with, so Controlify reads whichever Spotify window names the current
+playback (the hidden main window normally does), and an album-less item that
+no window names counts as an ad.
+
 ### Why does the notification show a prediction instead of the real count?
 
 Spotify only exposes the ad that is playing right now, never how many are

@@ -11,6 +11,10 @@ All notable changes to Controlify are documented here. The format is based on
 - Opening Spotify's miniplayer no longer mutes the song that is playing. The
   miniplayer writes the window title as "Track • Artist" rather than
   "Artist - Track", which the weak ad rule mistook for an ad.
+- Ads still mute while the miniplayer is open. Its window keeps the track it
+  was opened with, so Controlify now reads the Spotify window that names the
+  current playback, and treats an album-less item that no window names as an
+  ad.
 
 ## [1.0.0] - 2026-10-27
 
