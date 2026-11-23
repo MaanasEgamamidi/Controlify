@@ -124,6 +124,13 @@ name. A real ad *inside* a podcast still mutes because Spotify labels it
 "Advertisement". If a normal episode is muted, please open an issue with the
 log lines.
 
+### Why did my music get muted when I opened the miniplayer?
+
+It should not. The miniplayer changes Spotify's window title from
+"Artist - Track" to "Track • Artist"; both name the track you are playing, so
+neither counts as an ad. If a miniplayer still mutes the music, open an issue
+with those log lines.
+
 ### Why does the notification show a prediction instead of the real count?
 
 Spotify only exposes the ad that is playing right now, never how many are

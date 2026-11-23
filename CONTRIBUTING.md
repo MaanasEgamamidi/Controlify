@@ -66,6 +66,8 @@ rule:
    representative.
 4. Keep podcast episodes exempt from the weak window-title rule; a real ad
    inside a podcast still announces itself as "Advertisement".
+5. Keep track-shaped window titles exempt too, in either order: the miniplayer
+   shows "Track • Artist" instead of "Artist - Track".
 
 ## Code style
 

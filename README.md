@@ -180,7 +180,10 @@ Three processes, each supervising the one below it:
   default any dictation pauses Spotify.
 * Ads: Spotify's media session reports "Advertisement" / artist "Spotify" (no
   album), or the metadata has the shape of an ad: **no album at all** and a
-  window title that is just the ad's own text instead of "Artist - Track".
+  window title that is just the ad's own text instead of a track title.
+  A window that names the current track in either order ("Artist - Track"
+  normally, "Track • Artist" in the miniplayer) is never an ad tell, so
+  opening the miniplayer doesn't mute the song.
   The window rule needs ~0.45s of agreement before it mutes.
   Verified against real ads during development; the test suite uses synthetic
   samples with the same shape (see `tests/test_detect.py`).

@@ -32,6 +32,24 @@ def test_paused_idle_window_title_is_not_ad():
 def test_missing_window_title_is_not_ad():
     assert not is_ad(m(SONG.title, SONG.artist, SONG.album, PLAYING, ""))
 
+
+def test_miniplayer_window_is_not_ad():
+    # The miniplayer shows "Track • Artist" instead of "Artist - Track".
+    win = f"{SONG.title} \u2022 {SONG.artist}"
+    assert not is_ad(m(SONG.title, SONG.artist, SONG.album, PLAYING, win))
+
+
+def test_window_with_a_dash_between_title_and_artist_is_not_ad():
+    win = f"{SONG.title} - {SONG.artist}"
+    assert not is_ad(m(SONG.title, SONG.artist, SONG.album, PLAYING, win))
+
+
+def test_miniplayer_window_does_not_hide_an_albumless_ad():
+    # Ads never have an album, so the track-shaped window must not exempt one.
+    ad = m("See it now", "The Real Cost", "", PLAYING,
+           "See it now \u2022 The Real Cost")
+    assert is_ad(ad)
+
 # The exact metadata a podcast episode publishes: no artist, the show as the
 # album, and a window title that is just the episode name.
 EPISODE = m("Episode 42: The Long Road", "", "The Sample Show",
@@ -143,6 +161,14 @@ def test_window_only_ad_mutes_after_debounce(app):
     ad = m("x", "y", "z", PLAYING, "LISTEN NOW")
     run(app, [ad] * 3)
     assert app.vol.v == 0.0
+
+
+def test_miniplayer_never_mutes_the_playing_song(app):
+    # Opening Spotify's miniplayer changes the window title, not the music.
+    mini = m(SONG.title, SONG.artist, SONG.album, PLAYING,
+             f"{SONG.title} \u2022 {SONG.artist}")
+    run(app, [mini] * 10)
+    assert app.vol.v == 1.0 and not app.ad_active
 
 def test_podcast_play_pause_cycle_never_mutes(app):
     # the real report: an episode played, got paused by hand, and was still

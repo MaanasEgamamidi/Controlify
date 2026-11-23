@@ -18,6 +18,7 @@ import json
 import logging
 import logging.handlers
 import os
+import re
 import signal
 import statistics
 import sys
@@ -90,17 +91,41 @@ def is_episode(m: Media) -> bool:
     return not m.artist.strip() or m.window_title.strip().lower() == m.title.strip().lower()
 
 
+# The miniplayer puts the track first and the artist second ("Track • Artist")
+# while the main window uses "Artist - Track"; either layout names the track.
+WINDOW_SEPARATORS = r"\s*[\u2022\u00b7|]\s*|\s+[-\u2013\u2014]\s+"
+
+
+def window_names_track(m: Media) -> bool:
+    """True when the window title holds this track's own title and artist.
+
+    Spotify's main window reads "Artist - Track", but its miniplayer reads
+    "Track • Artist". Both name the same track, so neither is an ad tell.
+    Only a window that cannot be split into title + artist falls through to
+    the weak rule.
+
+    Ads never have an album, so requiring one here can't hide a real ad.
+    """
+    title, artist = m.title.strip().lower(), m.artist.strip().lower()
+    win = m.window_title.strip().lower()
+    if not (m.album.strip() and title and artist and win):
+        return False
+    parts = [p.strip() for p in re.split(WINDOW_SEPARATORS, win)]
+    return title in parts and artist in parts
+
+
 def ad_signal(m: Media) -> int:
     """STRONG if Spotify's media session itself says ad, WEAK if the metadata
     has the shape of an ad, 0 if it looks like a normal track or an episode.
 
-    Real tracks have an artist + album and a window title of "Artist - Track".
-    Ads are published with the advertiser as the artist ("Sample Brand",
-    "Another Advertiser", ...) and *no album at all*, and Spotify's
-    window then shows just the ad's own text instead of "Artist - Track".
+    Real tracks have an artist + album and a window title of "Artist - Track"
+    (or "Track • Artist" in the miniplayer). Ads are published with the
+    advertiser as the artist ("Sample Brand", "Another Advertiser", ...) and
+    *no album at all*, and Spotify's window then shows just the ad's own text
+    instead of a track title.
 
     So an ad is one of two things: the window title is exactly the ad's text,
-    or the window has dropped the "Artist - Track" form (e.g. "Advertisement",
+    or the window has dropped the track form (e.g. "Advertisement",
     "Spotify Free", "LISTEN NOW", a bare dash). Podcast episodes look like the
     second case, so is_episode() vetoes them - but only when they have an
     album, which ads never do.
@@ -114,6 +139,8 @@ def ad_signal(m: Media) -> int:
     if m.status != PLAYING:
         return 0
     if is_episode(m):
+        return 0
+    if window_names_track(m):
         return 0
     win = m.window_title.strip()
     if not win:
